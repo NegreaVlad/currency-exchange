@@ -12,6 +12,7 @@ import co.zipperstudios.currencyexchange.di.qualifiers.ViewModelInjection
 import co.zipperstudios.currencyexchange.ui.base.BaseFragment
 import co.zipperstudios.currencyexchange.ui.currency.exchange.adapter.CurrencyExchangeAdapter
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>() {
@@ -24,10 +25,18 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
         }
     }
 
+    private var exchangeList: MutableList<CurrencyExchange>? = null
+
     private lateinit var adapter: CurrencyExchangeAdapter
     private val currencyClickedEvent: ((CurrencyExchange) -> Unit)? = object : (CurrencyExchange) -> Unit {
         override fun invoke(p1: CurrencyExchange) {
-
+            Timber.d("Clicked item $p1")
+            val index = exchangeList?.indexOfFirst { it.currencyCode == p1.currencyCode }
+            index?.let { index ->
+                exchangeList?.subList(0, index + 1)?.let { Collections.rotate(it, -index) }
+                adapter.notifyItemRangeChanged(0, index + 1)
+//                adapter.submitList(exchangeList ?: emptyList())
+            }
         }
     }
 
@@ -60,11 +69,10 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
 //                swipe_to_refresh.isRefreshing = false
 //            }
 
-            if (exchangeRates != null) {
-                adapter.submitList(exchangeRates.data?.exchangeRates?.toList())
-            } else {
-                adapter.submitList(emptyList())
-            }
+            val exchangeRates = exchangeRates.data?.exchangeRates
+            val list = exchangeRates?.toMutableList()
+            exchangeList = list
+            adapter.submitList(list ?: emptyList())
         })
     }
 }

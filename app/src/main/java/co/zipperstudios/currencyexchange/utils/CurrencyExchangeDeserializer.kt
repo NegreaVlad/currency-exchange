@@ -58,7 +58,6 @@ class CurrencyExchangeDeserializer : JsonDeserializer<CurrencyExchangeResponse> 
             exchangeRates.add(CurrencyExchange(key, value1.asFloat))
         }
 
-
         return exchangeRates
     }
 
