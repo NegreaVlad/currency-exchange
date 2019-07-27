@@ -1,4 +1,4 @@
-package co.zipperstudios.currencyexchange.api.utils
+package co.zipperstudios.currencyexchange.utils
 
 class HawkConstants {
     companion object {

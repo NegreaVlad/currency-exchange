@@ -20,7 +20,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
-import co.zipperstudios.currencyexchange.api.utils.AppExecutors
+import co.zipperstudios.currencyexchange.utils.AppExecutors
 
 /**
  * A generic class that can provide a resource backed by the network.

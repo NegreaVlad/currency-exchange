@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package co.zipperstudios.currencyexchange.api.utils
+package co.zipperstudios.currencyexchange.utils
 
 import androidx.lifecycle.LiveData
 import co.zipperstudios.currencyexchange.api.ApiResponse

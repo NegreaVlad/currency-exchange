@@ -1,7 +1,7 @@
 package co.zipperstudios.currencyexchange.di.modules
 
 import co.zipperstudios.currencyexchange.api.CurrencyExchangeApi
-import co.zipperstudios.currencyexchange.api.utils.AppExecutors
+import co.zipperstudios.currencyexchange.utils.AppExecutors
 import co.zipperstudios.currencyexchange.data.repository.CurrencyExchangeRepository
 import com.ewsgroup.mscrew.api.providers.CurrencyExchangeProvider
 import dagger.Module

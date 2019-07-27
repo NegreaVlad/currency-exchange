@@ -2,7 +2,7 @@ package co.zipperstudios.currencyexchange.api.module
 
 import co.zipperstudios.currencyexchange.BuildConfig
 import co.zipperstudios.currencyexchange.api.CurrencyExchangeApi
-import co.zipperstudios.currencyexchange.api.utils.LiveDataCallAdapterFactory
+import co.zipperstudios.currencyexchange.utils.LiveDataCallAdapterFactory
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module

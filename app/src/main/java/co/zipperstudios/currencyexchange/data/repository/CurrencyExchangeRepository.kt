@@ -5,7 +5,7 @@ import co.zipperstudios.currencyexchange.api.ApiResponse
 import co.zipperstudios.currencyexchange.api.CurrencyExchangeApi
 import co.zipperstudios.currencyexchange.api.NetworkOnlyResource
 import co.zipperstudios.currencyexchange.api.Resource
-import co.zipperstudios.currencyexchange.api.utils.AppExecutors
+import co.zipperstudios.currencyexchange.utils.AppExecutors
 import com.ewsgroup.mscrew.api.providers.CurrencyExchangeProvider
 import javax.inject.Inject
 
