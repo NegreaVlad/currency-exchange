@@ -1,9 +1,11 @@
 package co.zipperstudios.currencyexchange.di.components
 
 import co.zipperstudios.currencyexchange.App
+import co.zipperstudios.currencyexchange.api.module.ApiModule
 import co.zipperstudios.currencyexchange.di.modules.ActivityInjectorsModule
-import co.zipperstudios.currencyexchange.di.modules.FragmentInjectorsModule
 import co.zipperstudios.currencyexchange.di.modules.AppModule
+import co.zipperstudios.currencyexchange.di.modules.FragmentInjectorsModule
+import co.zipperstudios.currencyexchange.di.modules.RepositoryModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
@@ -15,7 +17,9 @@ import javax.inject.Singleton
         AndroidSupportInjectionModule::class,
         ActivityInjectorsModule::class,
         FragmentInjectorsModule::class,
-        AppModule::class]
+        RepositoryModule::class,
+        AppModule::class,
+        ApiModule::class]
 )
 interface AppComponent {
 
