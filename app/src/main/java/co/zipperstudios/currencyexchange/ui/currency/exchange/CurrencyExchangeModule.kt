@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import co.zipperstudios.currencyexchange.di.qualifiers.ViewModelInjection
 import co.zipperstudios.currencyexchange.di.InjectionViewModelProvider
-import com.ewsgroup.mscrew.api.providers.CurrencyExchangeProvider
+import co.zipperstudios.currencyexchange.api.providers.CurrencyExchangeProvider
 
 @Module
 class CurrencyExchangeModule {

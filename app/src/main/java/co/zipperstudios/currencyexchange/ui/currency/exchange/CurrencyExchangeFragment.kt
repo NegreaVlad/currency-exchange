@@ -8,6 +8,7 @@ import co.zipperstudios.currencyexchange.databinding.FragmentCurrencyExchangeBin
 import co.zipperstudios.currencyexchange.di.ViewModelInjectionField
 import co.zipperstudios.currencyexchange.di.qualifiers.ViewModelInjection
 import co.zipperstudios.currencyexchange.ui.base.BaseFragment
+import timber.log.Timber
 import javax.inject.Inject
 
 class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>() {
@@ -37,7 +38,7 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
 
     private fun initObservers() {
         viewModel.get().currencyExchanges.observe(this, Observer {
-
+            Timber.d("Currency info $it")
         })
     }
 }

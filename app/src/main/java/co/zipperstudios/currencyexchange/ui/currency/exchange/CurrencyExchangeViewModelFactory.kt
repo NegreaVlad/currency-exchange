@@ -2,7 +2,7 @@ package co.zipperstudios.currencyexchange.ui.currency.exchange
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.ewsgroup.mscrew.api.providers.CurrencyExchangeProvider
+import co.zipperstudios.currencyexchange.api.providers.CurrencyExchangeProvider
 
 class CurrencyExchangeViewModelFactory(
     private val currencyExchangeProvider: CurrencyExchangeProvider
