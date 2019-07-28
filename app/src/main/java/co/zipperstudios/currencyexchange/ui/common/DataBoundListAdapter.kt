@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ewsgroup.mscrew.ui.common
+package co.zipperstudios.currencyexchange.ui.common
 
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.AsyncDifferConfig

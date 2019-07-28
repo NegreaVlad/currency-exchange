@@ -33,9 +33,23 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
             Timber.d("Clicked item $p1")
             val index = exchangeList?.indexOfFirst { it.currencyCode == p1.currencyCode }
             index?.let { index ->
+                val previousItem = exchangeList?.get(0)
+                previousItem?.isHeader = false
+
+                val currentItem = exchangeList?.get(index)
+                currentItem?.isHeader = true
+
+                // Adjust exchange rates based on current header
+                currentItem?.let {
+                    val currentAmount = currentItem.exchangeRate * adapter.amount.amount
+                    val currentExchangeRate = currentItem.exchangeRate
+                    exchangeList?.map { it.exchangeRate /= currentExchangeRate }
+                    currentItem.exchangeRate = 1f
+                    adapter.amount.amount = currentAmount
+                }
+
                 exchangeList?.subList(0, index + 1)?.let { Collections.rotate(it, -index) }
                 adapter.notifyItemRangeChanged(0, index + 1)
-//                adapter.submitList(exchangeList ?: emptyList())
             }
         }
     }
@@ -69,7 +83,6 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
 //                swipe_to_refresh.isRefreshing = false
 //            }
 
-            val exchangeRates = exchangeRates.data?.exchangeRates
             val list = exchangeRates?.toMutableList()
             exchangeList = list
             adapter.submitList(list ?: emptyList())

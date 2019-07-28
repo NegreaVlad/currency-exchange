@@ -9,7 +9,12 @@
 
         <variable
             name="amount"
-            type="java.lang.Float" />
+            type="co.zipperstudios.currencyexchange.data.model.CurrencyExchangeAmount" />
+
+        <variable
+            name="textChangeListener"
+            type="android.text.TextWatcher" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -60,9 +65,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:inputType="numberDecimal"
             android:hint="0"
+            android:inputType="numberDecimal"
             android:minWidth="10dp"
+            app:amount="@{amount.amount}"
+            app:exchangeRate="@{exchange.exchangeRate}"
+            app:isHeader="@{exchange.isHeader}"
+            app:textChangeListener="@{textChangeListener}"
             android:textAlignment="viewEnd"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

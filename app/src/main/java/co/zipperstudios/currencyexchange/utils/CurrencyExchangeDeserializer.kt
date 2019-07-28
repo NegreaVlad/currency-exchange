@@ -55,7 +55,7 @@ class CurrencyExchangeDeserializer : JsonDeserializer<CurrencyExchangeResponse> 
         val exchangeRates = HashSet<CurrencyExchange>()
 
         for ((key, value1) in parametersObject.entrySet()) {
-            exchangeRates.add(CurrencyExchange(key, value1.asFloat))
+            exchangeRates.add(CurrencyExchange(key, value1.asFloat, false))
         }
 
         return exchangeRates

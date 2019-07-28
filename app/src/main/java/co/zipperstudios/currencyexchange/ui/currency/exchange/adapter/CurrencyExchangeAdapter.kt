@@ -16,6 +16,8 @@
 
 package co.zipperstudios.currencyexchange.ui.currency.exchange.adapter
 
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingComponent
@@ -23,8 +25,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import co.zipperstudios.currencyexchange.R
 import co.zipperstudios.currencyexchange.data.model.CurrencyExchange
+import co.zipperstudios.currencyexchange.data.model.CurrencyExchangeAmount
 import co.zipperstudios.currencyexchange.databinding.CurrencyItemBinding
-import com.ewsgroup.mscrew.ui.common.DataBoundListAdapter
+import co.zipperstudios.currencyexchange.ui.common.DataBoundListAdapter
 
 
 open class CurrencyExchangeAdapter(
@@ -41,6 +44,21 @@ open class CurrencyExchangeAdapter(
         }
     }
 ) {
+    val amount = CurrencyExchangeAmount()
+
+    private val textChangeListener: TextWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
+            amount.amount = s.toString().toFloatOrNull() ?: 0f
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+        }
+
+    }
 
     override fun createBinding(parent: ViewGroup): CurrencyItemBinding {
         val binding = DataBindingUtil
@@ -61,5 +79,11 @@ open class CurrencyExchangeAdapter(
 
     override fun bind(binding: CurrencyItemBinding, item: CurrencyExchange) {
         binding.exchange = item
+        binding.amount = amount
+        binding.textChangeListener = textChangeListener
+
+        if (item.isHeader) {
+            dataBindingComponent.fragmentBindingAdapters.bindExchangeRate(binding.currencyAmount, amount.amount, item.exchangeRate, false, textChangeListener)
+        }
     }
 }

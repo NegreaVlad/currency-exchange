@@ -17,6 +17,8 @@
 package co.zipperstudios.currencyexchange.binding
 
 import android.graphics.drawable.Drawable
+import android.text.TextWatcher
+import android.widget.EditText
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
@@ -44,6 +46,17 @@ class FragmentBindingAdapters @Inject constructor(val fragment: Fragment) {
         swipeRefreshListener: SwipeRefreshLayout.OnRefreshListener
     ) {
         swipeRefreshLayout.setOnRefreshListener(swipeRefreshListener)
+    }
+
+    @BindingAdapter(value = ["amount", "exchangeRate", "isHeader", "textChangeListener"], requireAll = false)
+    fun bindExchangeRate(editText: EditText, amount: Float, exchangeRate: Float, isHeader: Boolean, textChangeListener: TextWatcher) {
+        editText.removeTextChangedListener(textChangeListener)
+        if (isHeader) {
+            editText.addTextChangedListener(textChangeListener)
+            return
+        }
+
+        editText.setText((amount * exchangeRate).toString())
     }
 }
 
