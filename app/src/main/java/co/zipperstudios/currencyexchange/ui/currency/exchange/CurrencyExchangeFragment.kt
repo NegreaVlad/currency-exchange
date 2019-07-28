@@ -1,6 +1,7 @@
 package co.zipperstudios.currencyexchange.ui.currency.exchange
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import androidx.lifecycle.Observer
 import co.zipperstudios.currencyexchange.R
@@ -13,6 +14,7 @@ import co.zipperstudios.currencyexchange.ui.base.BaseFragment
 import co.zipperstudios.currencyexchange.ui.currency.exchange.adapter.CurrencyExchangeAdapter
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>() {
@@ -27,16 +29,28 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
 
     private var exchangeList: MutableList<CurrencyExchange>? = null
 
+    private val refreshHandler = Handler()
+    private val refreshExchangeRunnable = object: Runnable {
+        override fun run() {
+            viewModel.get().refresh.value = true
+            refreshHandler.postDelayed(this, refreshInterval)
+        }
+    }
+    private val refreshInterval = TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS)
+
     private lateinit var adapter: CurrencyExchangeAdapter
     private val currencyClickedEvent: ((CurrencyExchange) -> Unit)? = object : (CurrencyExchange) -> Unit {
         override fun invoke(p1: CurrencyExchange) {
             Timber.d("Clicked item $p1")
-            val index = exchangeList?.indexOfFirst { it.currencyCode == p1.currencyCode }
-            index?.let { index ->
+
+            viewModel.get().currentBaseCurrency = p1.currencyCode
+
+            val clickedItemIndex = exchangeList?.indexOfFirst { it.currencyCode == p1.currencyCode }
+            clickedItemIndex?.let {
                 val previousItem = exchangeList?.get(0)
                 previousItem?.isHeader = false
 
-                val currentItem = exchangeList?.get(index)
+                val currentItem = exchangeList?.get(clickedItemIndex)
                 currentItem?.isHeader = true
 
                 // Adjust exchange rates based on current header
@@ -48,8 +62,8 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
                     adapter.amount.amount = currentAmount
                 }
 
-                exchangeList?.subList(0, index + 1)?.let { Collections.rotate(it, -index) }
-                adapter.notifyItemRangeChanged(0, index + 1)
+                exchangeList?.subList(0, clickedItemIndex + 1)?.let { Collections.rotate(it, -clickedItemIndex) }
+                adapter.notifyItemRangeChanged(0, clickedItemIndex + 1)
             }
         }
     }
@@ -64,6 +78,8 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
         initAdapter()
         initBinding()
         initObservers()
+
+        refreshHandler.post(refreshExchangeRunnable)
     }
 
     private fun initAdapter() {
@@ -79,11 +95,7 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
         viewModel.get().currencyExchanges.observe(this, Observer { exchangeRates ->
             Timber.d("Currency info $exchangeRates")
 
-//            if (jobs.status == Status.SUCCESS || jobs.status == Status.ERROR) {
-//                swipe_to_refresh.isRefreshing = false
-//            }
-
-            val list = exchangeRates?.toMutableList()
+            val list = exchangeRates?.exchangeRates?.toMutableList()
             exchangeList = list
             adapter.submitList(list ?: emptyList())
         })
