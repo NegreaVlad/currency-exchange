@@ -94,6 +94,7 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
     private fun initObservers() {
         viewModel.get().currencyExchanges.observe(this, Observer { exchangeRates ->
             Timber.d("Currency info $exchangeRates")
+            binding.placeholder.visibility = if (exchangeRates?.exchangeRates?.isNotEmpty() == true) View.GONE else View.VISIBLE
 
             val list = exchangeRates?.exchangeRates?.toMutableList()
             adapter.submitList(list)

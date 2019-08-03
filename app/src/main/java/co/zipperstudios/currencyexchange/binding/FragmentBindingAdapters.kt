@@ -18,6 +18,7 @@ package co.zipperstudios.currencyexchange.binding
 
 import android.graphics.drawable.Drawable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -35,6 +36,11 @@ import javax.inject.Inject
  * Binding adapters that work with a fragment instance.
  */
 class FragmentBindingAdapters @Inject constructor(val fragment: Fragment) {
+    @BindingAdapter("visibleGone")
+    fun showHide(view: View, show: Boolean) {
+        view.visibility = if (show) View.VISIBLE else View.GONE
+    }
+
     val dateFormat: SimpleDateFormat = SimpleDateFormat("dd MMM ", Locale.getDefault())
 
     @BindingAdapter(value = ["imageUrl", "imageRequestListener"], requireAll = false)
