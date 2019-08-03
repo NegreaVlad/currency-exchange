@@ -28,6 +28,14 @@ import co.zipperstudios.currencyexchange.data.model.CurrencyExchange
 import co.zipperstudios.currencyexchange.data.model.CurrencyExchangeAmount
 import co.zipperstudios.currencyexchange.databinding.CurrencyItemBinding
 import co.zipperstudios.currencyexchange.ui.common.DataBoundListAdapter
+import co.zipperstudios.currencyexchange.utils.DecimalDigitsInputFilter
+import android.text.InputFilter
+import android.text.Spanned
+import android.text.method.DigitsKeyListener
+
+
+
+
 
 
 open class CurrencyExchangeAdapter(
@@ -79,6 +87,8 @@ open class CurrencyExchangeAdapter(
     }
 
     override fun bind(binding: CurrencyItemBinding, item: CurrencyExchange) {
+        binding.currencyAmount.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter( 2))
+//        binding.currencyAmount.keyListener = DecimalDigitsInputFilter(2)
         binding.exchange = item
         binding.amount = amount
         binding.textChangeListener = textChangeListener

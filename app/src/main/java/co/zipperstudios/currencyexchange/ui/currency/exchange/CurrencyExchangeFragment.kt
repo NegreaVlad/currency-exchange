@@ -17,6 +17,8 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+
+
 class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>() {
 
     override fun layoutRes() = R.layout.fragment_currency_exchange
