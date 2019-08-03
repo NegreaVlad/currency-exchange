@@ -27,8 +27,6 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
         }
     }
 
-    private var exchangeList: MutableList<CurrencyExchange>? = null
-
     private val refreshHandler = Handler()
     private val refreshExchangeRunnable = object: Runnable {
         override fun run() {
@@ -36,7 +34,7 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
             refreshHandler.postDelayed(this, refreshInterval)
         }
     }
-    private val refreshInterval = TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS)
+    private val refreshInterval = TimeUnit.MILLISECONDS.convert(1, TimeUnit.SECONDS)
 
     private lateinit var adapter: CurrencyExchangeAdapter
     private val currencyClickedEvent: ((CurrencyExchange) -> Unit)? = object : (CurrencyExchange) -> Unit {
@@ -45,24 +43,24 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
 
             viewModel.get().currentBaseCurrency = p1.currencyCode
 
-            val clickedItemIndex = exchangeList?.indexOfFirst { it.currencyCode == p1.currencyCode }
+            val clickedItemIndex = adapter.items?.indexOfFirst { it.currencyCode == p1.currencyCode }
             clickedItemIndex?.let {
-                val previousItem = exchangeList?.get(0)
+                val previousItem = adapter.items?.get(0)
                 previousItem?.isHeader = false
 
-                val currentItem = exchangeList?.get(clickedItemIndex)
+                val currentItem = adapter.items?.get(clickedItemIndex)
                 currentItem?.isHeader = true
 
                 // Adjust exchange rates based on current header
                 currentItem?.let {
                     val currentAmount = currentItem.exchangeRate * adapter.amount.amount
                     val currentExchangeRate = currentItem.exchangeRate
-                    exchangeList?.map { it.exchangeRate /= currentExchangeRate }
+                    adapter.items?.map { it.exchangeRate /= currentExchangeRate }
                     currentItem.exchangeRate = 1f
                     adapter.amount.amount = currentAmount
                 }
 
-                exchangeList?.subList(0, clickedItemIndex + 1)?.let { Collections.rotate(it, -clickedItemIndex) }
+                adapter.items?.subList(0, clickedItemIndex + 1)?.let { Collections.rotate(it, -clickedItemIndex) }
                 adapter.notifyItemRangeChanged(0, clickedItemIndex + 1)
             }
         }
@@ -96,8 +94,7 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
             Timber.d("Currency info $exchangeRates")
 
             val list = exchangeRates?.exchangeRates?.toMutableList()
-            exchangeList = list
-            adapter.submitList(list ?: emptyList())
+            adapter.submitList(list)
         })
     }
 }

@@ -45,6 +45,7 @@ open class CurrencyExchangeAdapter(
     }
 ) {
     val amount = CurrencyExchangeAmount()
+    var items: MutableList<CurrencyExchange>? = null
 
     private val textChangeListener: TextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -84,6 +85,15 @@ open class CurrencyExchangeAdapter(
 
         if (item.isHeader) {
             dataBindingComponent.fragmentBindingAdapters.bindExchangeRate(binding.currencyAmount, amount.amount, item.exchangeRate, false, textChangeListener)
+        }
+    }
+
+    override fun submitList(list: MutableList<CurrencyExchange>?) {
+        if (items != null) {
+            items?.map {originalCurrency ->  list?.find { it.currencyCode == originalCurrency.currencyCode }?.exchangeRate?.let { originalCurrency.exchangeRate = it } }
+        } else {
+            items = list
+            super.submitList(list ?: emptyList())
         }
     }
 }
