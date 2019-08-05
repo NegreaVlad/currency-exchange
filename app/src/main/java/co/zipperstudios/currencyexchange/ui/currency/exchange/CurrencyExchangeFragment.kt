@@ -12,11 +12,8 @@ import co.zipperstudios.currencyexchange.di.ViewModelInjectionField
 import co.zipperstudios.currencyexchange.di.qualifiers.ViewModelInjection
 import co.zipperstudios.currencyexchange.ui.base.BaseFragment
 import co.zipperstudios.currencyexchange.ui.currency.exchange.adapter.CurrencyExchangeAdapter
-import timber.log.Timber
-import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
 
 
 class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>() {
@@ -30,47 +27,32 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
     }
 
     private val refreshHandler = Handler()
-    private val refreshExchangeRunnable = object: Runnable {
-        override fun run() {
-            viewModel.get().refresh.value = true
-            refreshHandler.postDelayed(this, refreshInterval)
-        }
-    }
+    private val refreshExchangeRunnable: Runnable
+    private val currencyClickedEvent: ((CurrencyExchange) -> Unit)?
     private val refreshInterval = TimeUnit.MILLISECONDS.convert(1, TimeUnit.SECONDS)
 
     private lateinit var adapter: CurrencyExchangeAdapter
-    private val currencyClickedEvent: ((CurrencyExchange) -> Unit)? = object : (CurrencyExchange) -> Unit {
-        override fun invoke(p1: CurrencyExchange) {
-            Timber.d("Clicked item $p1")
-
-            viewModel.get().currentBaseCurrency = p1.currencyCode
-
-            val clickedItemIndex = adapter.items?.indexOfFirst { it.currencyCode == p1.currencyCode }
-            clickedItemIndex?.let {
-                val previousItem = adapter.items?.get(0)
-                previousItem?.isHeader = false
-
-                val currentItem = adapter.items?.get(clickedItemIndex)
-                currentItem?.isHeader = true
-
-                // Adjust exchange rates based on current header
-                currentItem?.let {
-                    val currentAmount = currentItem.exchangeRate * adapter.amount.amount
-                    val currentExchangeRate = currentItem.exchangeRate
-                    adapter.items?.map { it.exchangeRate /= currentExchangeRate }
-                    currentItem.exchangeRate = 1f
-                    adapter.amount.amount = currentAmount
-                }
-
-                adapter.items?.subList(0, clickedItemIndex + 1)?.let { Collections.rotate(it, -clickedItemIndex) }
-                adapter.notifyItemRangeChanged(0, clickedItemIndex + 1)
-            }
-        }
-    }
 
     @Inject
     @ViewModelInjection
     lateinit var viewModel: ViewModelInjectionField<CurrencyExchangeVM>
+
+    init {
+        currencyClickedEvent = object : (CurrencyExchange) -> Unit {
+            override fun invoke(currencyExchange: CurrencyExchange) {
+                viewModel.get().currentBaseCurrency = currencyExchange.currencyCode
+
+                adapter.updatePrimaryCurrency(currencyExchange)
+            }
+        }
+
+        refreshExchangeRunnable = object : Runnable {
+            override fun run() {
+                viewModel.get().refresh.value = true
+                refreshHandler.postDelayed(this, refreshInterval)
+            }
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -93,8 +75,8 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
 
     private fun initObservers() {
         viewModel.get().currencyExchanges.observe(this, Observer { exchangeRates ->
-            Timber.d("Currency info $exchangeRates")
-            binding.placeholder.visibility = if (exchangeRates?.exchangeRates?.isNotEmpty() == true) View.GONE else View.VISIBLE
+            binding.placeholder.visibility =
+                if (exchangeRates?.exchangeRates?.isNotEmpty() == true) View.GONE else View.VISIBLE
 
             val list = exchangeRates?.exchangeRates?.toMutableList()
             adapter.submitList(list)

@@ -17,6 +17,7 @@
 package co.zipperstudios.currencyexchange.ui.currency.exchange.adapter
 
 import android.text.Editable
+import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -29,13 +30,7 @@ import co.zipperstudios.currencyexchange.data.model.CurrencyExchangeAmount
 import co.zipperstudios.currencyexchange.databinding.CurrencyItemBinding
 import co.zipperstudios.currencyexchange.ui.common.DataBoundListAdapter
 import co.zipperstudios.currencyexchange.utils.DecimalDigitsInputFilter
-import android.text.InputFilter
-import android.text.Spanned
-import android.text.method.DigitsKeyListener
-
-
-
-
+import java.util.*
 
 
 open class CurrencyExchangeAdapter(
@@ -87,23 +82,54 @@ open class CurrencyExchangeAdapter(
     }
 
     override fun bind(binding: CurrencyItemBinding, item: CurrencyExchange) {
-        binding.currencyAmount.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter( 2))
-//        binding.currencyAmount.keyListener = DecimalDigitsInputFilter(2)
+        binding.currencyAmount.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter(2))
         binding.exchange = item
         binding.amount = amount
         binding.textChangeListener = textChangeListener
 
         if (item.isHeader) {
-            dataBindingComponent.fragmentBindingAdapters.bindExchangeRate(binding.currencyAmount, amount.amount, item.exchangeRate, false, textChangeListener)
+            dataBindingComponent.fragmentBindingAdapters.bindExchangeRate(
+                binding.currencyAmount,
+                amount.amount,
+                item.exchangeRate,
+                false,
+                textChangeListener
+            )
         }
     }
 
     override fun submitList(list: MutableList<CurrencyExchange>?) {
         if (items != null) {
-            items?.map {originalCurrency ->  list?.find { it.currencyCode == originalCurrency.currencyCode }?.exchangeRate?.let { originalCurrency.exchangeRate = it } }
+            items?.map { originalCurrency ->
+                list?.find { it.currencyCode == originalCurrency.currencyCode }
+                    ?.exchangeRate?.let { originalCurrency.exchangeRate = it }
+            }
         } else {
             items = list
             super.submitList(list ?: emptyList())
+        }
+    }
+
+    fun updatePrimaryCurrency(p1: CurrencyExchange) {
+        val clickedItemIndex = items?.indexOfFirst { it.currencyCode == p1.currencyCode }
+        clickedItemIndex?.let {
+            val previousItem = items?.get(0)
+            previousItem?.isHeader = false
+
+            val currentItem = items?.get(clickedItemIndex)
+            currentItem?.isHeader = true
+
+            // Adjust exchange rates based on current header
+            currentItem?.let {
+                val currentAmount = currentItem.exchangeRate * amount.amount
+                val currentExchangeRate = currentItem.exchangeRate
+                items?.map { it.exchangeRate /= currentExchangeRate }
+                currentItem.exchangeRate = 1f
+                amount.amount = currentAmount
+            }
+
+            items?.subList(0, clickedItemIndex + 1)?.let { Collections.rotate(it, -clickedItemIndex) }
+            notifyItemRangeChanged(0, clickedItemIndex + 1)
         }
     }
 }

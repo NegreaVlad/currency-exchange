@@ -78,7 +78,8 @@ class FragmentBindingAdapters @Inject constructor(val fragment: Fragment) {
             return
         }
 
-        editText.setText((amount * exchangeRate).toString())
+        val convertedValue = amount * exchangeRate
+        editText.setText(if (convertedValue > 0) convertedValue.toString() else "")
     }
 
     @BindingAdapter(value = ["displayCurrencyName"], requireAll = true)
