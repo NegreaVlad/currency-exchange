@@ -20,6 +20,7 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
@@ -31,6 +32,11 @@ import co.zipperstudios.currencyexchange.databinding.CurrencyItemBinding
 import co.zipperstudios.currencyexchange.ui.common.DataBoundListAdapter
 import co.zipperstudios.currencyexchange.utils.DecimalDigitsInputFilter
 import java.util.*
+import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
+import android.content.Context.INPUT_METHOD_SERVICE
+import androidx.core.content.ContextCompat.getSystemService
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 
 
 open class CurrencyExchangeAdapter(
@@ -47,6 +53,7 @@ open class CurrencyExchangeAdapter(
         }
     }
 ) {
+    private var primaryItemUpdated: Boolean = false
     val amount = CurrencyExchangeAmount()
     var items: MutableList<CurrencyExchange>? = null
 
@@ -73,11 +80,13 @@ open class CurrencyExchangeAdapter(
                 false,
                 dataBindingComponent
             )
-        binding.root.setOnClickListener {
+
+        binding.touchInterceptor.setOnClickListener {
             binding.exchange?.let {
                 callback?.invoke(it)
             }
         }
+
         return binding
     }
 
@@ -95,6 +104,19 @@ open class CurrencyExchangeAdapter(
                 false,
                 textChangeListener
             )
+
+            if (primaryItemUpdated) {
+                requestEditTextFocus(binding)
+                primaryItemUpdated = false
+            }
+        }
+    }
+
+    private fun requestEditTextFocus(binding: CurrencyItemBinding) {
+        binding.getRoot().post {
+            binding.currencyAmount.requestFocus()
+            val imm = binding.currencyAmount.context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm!!.showSoftInput(binding.currencyAmount, SHOW_IMPLICIT)
         }
     }
 
@@ -130,6 +152,8 @@ open class CurrencyExchangeAdapter(
 
             items?.subList(0, clickedItemIndex + 1)?.let { Collections.rotate(it, -clickedItemIndex) }
             notifyItemRangeChanged(0, clickedItemIndex + 1)
+
+            primaryItemUpdated = true
         }
     }
 }

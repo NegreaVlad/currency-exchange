@@ -43,6 +43,8 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
                 viewModel.get().currentBaseCurrency = currencyExchange.currencyCode
 
                 adapter.updatePrimaryCurrency(currencyExchange)
+
+                binding.exchangesList.smoothScrollToPosition(0)
             }
         }
 
