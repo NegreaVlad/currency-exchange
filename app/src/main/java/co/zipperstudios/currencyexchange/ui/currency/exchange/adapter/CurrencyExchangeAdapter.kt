@@ -36,7 +36,10 @@ import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.content.Context.INPUT_METHOD_SERVICE
 import androidx.core.content.ContextCompat.getSystemService
 import android.content.Context
+import android.view.GestureDetector
 import android.view.inputmethod.InputMethodManager
+import co.zipperstudios.currencyexchange.utils.GestureInterface
+import co.zipperstudios.currencyexchange.utils.GestureListener
 
 
 open class CurrencyExchangeAdapter(
@@ -52,7 +55,7 @@ open class CurrencyExchangeAdapter(
             return oldItem == newItem
         }
     }
-) {
+), GestureInterface {
     private var primaryItemUpdated: Boolean = false
     val amount = CurrencyExchangeAmount()
     var items: MutableList<CurrencyExchange>? = null
@@ -81,10 +84,16 @@ open class CurrencyExchangeAdapter(
                 dataBindingComponent
             )
 
-        binding.root.setOnClickListener {
-            binding.exchange?.let {
-                callback?.invoke(it)
+        val gestureDetector = GestureDetector(binding.touchInterceptor.context, GestureListener(object: GestureInterface {
+            override fun onClick() {
+                binding.exchange?.let {
+                    callback?.invoke(it)
+                }
             }
+        }))
+
+        binding.touchInterceptor.setOnTouchListener { v, event ->
+            return@setOnTouchListener gestureDetector.onTouchEvent(event)
         }
 
         return binding
@@ -113,7 +122,7 @@ open class CurrencyExchangeAdapter(
     }
 
     private fun requestEditTextFocus(binding: CurrencyItemBinding) {
-        binding.getRoot().post {
+        binding.root.post {
             binding.currencyAmount.requestFocus()
             val imm = binding.currencyAmount.context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
             imm!!.showSoftInput(binding.currencyAmount, SHOW_IMPLICIT)
