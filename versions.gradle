@@ -59,6 +59,7 @@ versions.custom_tabs = "23.3.0"
 versions.calligraphy = "2.3.0"
 versions.keyboard_listener = "2.1.0"
 versions.fabric = "2.10.1@aar"
+versions.flags = "1.0"
 
 def deps = [:]
 
@@ -156,6 +157,7 @@ deps.custom_tabs = "com.android.support:customtabs:$versions.custom_tabs"
 deps.calligraphy = "uk.co.chrisjenx:calligraphy:$versions.calligraphy"
 deps.keyboard_listener = "net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:$versions.keyboard_listener"
 deps.fabric = "com.crashlytics.sdk.android:crashlytics:$versions.fabric"
+deps.flags = "com.jwang123.flagkit:flagkit:$versions.flags"
 ext.deps = deps
 
 def build_versions = [:]

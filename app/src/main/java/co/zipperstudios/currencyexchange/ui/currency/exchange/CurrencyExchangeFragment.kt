@@ -1,6 +1,7 @@
 package co.zipperstudios.currencyexchange.ui.currency.exchange
 
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import androidx.lifecycle.Observer
 import co.zipperstudios.currencyexchange.R
@@ -11,9 +12,9 @@ import co.zipperstudios.currencyexchange.di.ViewModelInjectionField
 import co.zipperstudios.currencyexchange.di.qualifiers.ViewModelInjection
 import co.zipperstudios.currencyexchange.ui.base.BaseFragment
 import co.zipperstudios.currencyexchange.ui.currency.exchange.adapter.CurrencyExchangeAdapter
-import timber.log.Timber
-import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+
 
 class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>() {
 
@@ -25,38 +26,35 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
         }
     }
 
-    private var exchangeList: MutableList<CurrencyExchange>? = null
+    private val refreshHandler = Handler()
+    private val refreshExchangeRunnable: Runnable
+    private val currencyClickedEvent: ((CurrencyExchange) -> Unit)?
+    private val refreshInterval = TimeUnit.MILLISECONDS.convert(1, TimeUnit.SECONDS)
 
     private lateinit var adapter: CurrencyExchangeAdapter
-    private val currencyClickedEvent: ((CurrencyExchange) -> Unit)? = object : (CurrencyExchange) -> Unit {
-        override fun invoke(p1: CurrencyExchange) {
-            Timber.d("Clicked item $p1")
-            val index = exchangeList?.indexOfFirst { it.currencyCode == p1.currencyCode }
-            index?.let { index ->
-                val previousItem = exchangeList?.get(0)
-                previousItem?.isHeader = false
-
-                val currentItem = exchangeList?.get(index)
-                currentItem?.isHeader = true
-
-                // Adjust exchange rates based on current header
-                currentItem?.let {
-                    val currentAmount = currentItem.exchangeRate * adapter.amount.amount
-                    val currentExchangeRate = currentItem.exchangeRate
-                    exchangeList?.map { it.exchangeRate /= currentExchangeRate }
-                    currentItem.exchangeRate = 1f
-                    adapter.amount.amount = currentAmount
-                }
-
-                exchangeList?.subList(0, index + 1)?.let { Collections.rotate(it, -index) }
-                adapter.notifyItemRangeChanged(0, index + 1)
-            }
-        }
-    }
 
     @Inject
     @ViewModelInjection
     lateinit var viewModel: ViewModelInjectionField<CurrencyExchangeVM>
+
+    init {
+        currencyClickedEvent = object : (CurrencyExchange) -> Unit {
+            override fun invoke(currencyExchange: CurrencyExchange) {
+                viewModel.get().currentBaseCurrency = currencyExchange.currencyCode
+
+                adapter.updatePrimaryCurrency(currencyExchange)
+
+                binding.exchangesList.smoothScrollToPosition(0)
+            }
+        }
+
+        refreshExchangeRunnable = object : Runnable {
+            override fun run() {
+                viewModel.get().refresh.value = true
+                refreshHandler.postDelayed(this, refreshInterval)
+            }
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -64,6 +62,8 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
         initAdapter()
         initBinding()
         initObservers()
+
+        refreshHandler.post(refreshExchangeRunnable)
     }
 
     private fun initAdapter() {
@@ -77,15 +77,11 @@ class CurrencyExchangeFragment : BaseFragment<FragmentCurrencyExchangeBinding>()
 
     private fun initObservers() {
         viewModel.get().currencyExchanges.observe(this, Observer { exchangeRates ->
-            Timber.d("Currency info $exchangeRates")
+            binding.placeholder.visibility =
+                if (exchangeRates?.exchangeRates?.isNotEmpty() == true) View.GONE else View.VISIBLE
 
-//            if (jobs.status == Status.SUCCESS || jobs.status == Status.ERROR) {
-//                swipe_to_refresh.isRefreshing = false
-//            }
-
-            val list = exchangeRates?.toMutableList()
-            exchangeList = list
-            adapter.submitList(list ?: emptyList())
+            val list = exchangeRates?.exchangeRates?.toMutableList()
+            adapter.submitList(list)
         })
     }
 }

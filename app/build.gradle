@@ -55,6 +55,7 @@ dependencies {
     implementation deps.dagger.android_support
     implementation deps.kotlin.stdlib
     implementation deps.keyboard_listener
+    implementation deps.flags
 
     implementation deps.rxjava2
     implementation deps.rx_android

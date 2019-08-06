@@ -17,8 +17,10 @@
 package co.zipperstudios.currencyexchange.ui.currency.exchange.adapter
 
 import android.text.Editable
+import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingComponent
 import androidx.databinding.DataBindingUtil
@@ -28,6 +30,13 @@ import co.zipperstudios.currencyexchange.data.model.CurrencyExchange
 import co.zipperstudios.currencyexchange.data.model.CurrencyExchangeAmount
 import co.zipperstudios.currencyexchange.databinding.CurrencyItemBinding
 import co.zipperstudios.currencyexchange.ui.common.DataBoundListAdapter
+import co.zipperstudios.currencyexchange.utils.DecimalDigitsInputFilter
+import java.util.*
+import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
+import android.content.Context.INPUT_METHOD_SERVICE
+import androidx.core.content.ContextCompat.getSystemService
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 
 
 open class CurrencyExchangeAdapter(
@@ -44,7 +53,9 @@ open class CurrencyExchangeAdapter(
         }
     }
 ) {
+    private var primaryItemUpdated: Boolean = false
     val amount = CurrencyExchangeAmount()
+    var items: MutableList<CurrencyExchange>? = null
 
     private val textChangeListener: TextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
@@ -69,21 +80,80 @@ open class CurrencyExchangeAdapter(
                 false,
                 dataBindingComponent
             )
-        binding.root.setOnClickListener {
+
+        binding.touchInterceptor.setOnClickListener {
             binding.exchange?.let {
                 callback?.invoke(it)
             }
         }
+
         return binding
     }
 
     override fun bind(binding: CurrencyItemBinding, item: CurrencyExchange) {
+        binding.currencyAmount.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter(2))
         binding.exchange = item
         binding.amount = amount
         binding.textChangeListener = textChangeListener
 
         if (item.isHeader) {
-            dataBindingComponent.fragmentBindingAdapters.bindExchangeRate(binding.currencyAmount, amount.amount, item.exchangeRate, false, textChangeListener)
+            dataBindingComponent.fragmentBindingAdapters.bindExchangeRate(
+                binding.currencyAmount,
+                amount.amount,
+                item.exchangeRate,
+                false,
+                textChangeListener
+            )
+
+            if (primaryItemUpdated) {
+                requestEditTextFocus(binding)
+                primaryItemUpdated = false
+            }
+        }
+    }
+
+    private fun requestEditTextFocus(binding: CurrencyItemBinding) {
+        binding.getRoot().post {
+            binding.currencyAmount.requestFocus()
+            val imm = binding.currencyAmount.context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm!!.showSoftInput(binding.currencyAmount, SHOW_IMPLICIT)
+        }
+    }
+
+    override fun submitList(list: MutableList<CurrencyExchange>?) {
+        if (items != null) {
+            items?.map { originalCurrency ->
+                list?.find { it.currencyCode == originalCurrency.currencyCode }
+                    ?.exchangeRate?.let { originalCurrency.exchangeRate = it }
+            }
+        } else {
+            items = list
+            super.submitList(list ?: emptyList())
+        }
+    }
+
+    fun updatePrimaryCurrency(p1: CurrencyExchange) {
+        val clickedItemIndex = items?.indexOfFirst { it.currencyCode == p1.currencyCode }
+        clickedItemIndex?.let {
+            val previousItem = items?.get(0)
+            previousItem?.isHeader = false
+
+            val currentItem = items?.get(clickedItemIndex)
+            currentItem?.isHeader = true
+
+            // Adjust exchange rates based on current header
+            currentItem?.let {
+                val currentAmount = currentItem.exchangeRate * amount.amount
+                val currentExchangeRate = currentItem.exchangeRate
+                items?.map { it.exchangeRate /= currentExchangeRate }
+                currentItem.exchangeRate = 1f
+                amount.amount = currentAmount
+            }
+
+            items?.subList(0, clickedItemIndex + 1)?.let { Collections.rotate(it, -clickedItemIndex) }
+            notifyItemRangeChanged(0, clickedItemIndex + 1)
+
+            primaryItemUpdated = true
         }
     }
 }
