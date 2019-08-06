@@ -81,7 +81,7 @@ open class CurrencyExchangeAdapter(
                 dataBindingComponent
             )
 
-        binding.touchInterceptor.setOnClickListener {
+        binding.root.setOnClickListener {
             binding.exchange?.let {
                 callback?.invoke(it)
             }
